@@ -2,6 +2,7 @@ package com.fintrack.api.fintrack.security;
 
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -11,6 +12,7 @@ import com.fintrack.api.fintrack.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Component 
 public class AuthenticationInterceptor implements HandlerInterceptor {
     public static final String USER_ID = "fintrack.userId";
     private static final String BEARER_PREFIX = "bearer ";
