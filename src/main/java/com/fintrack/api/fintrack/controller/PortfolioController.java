@@ -16,9 +16,14 @@ import com.fintrack.api.fintrack.dto.TransactionRequest;
 import com.fintrack.api.fintrack.security.AuthenticationInterceptor;
 import com.fintrack.api.fintrack.service.PortfolioService;
 import com.fintrack.api.fintrack.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Portfolios", description = "Manage portfolios, summaries, and transactions.")
+@SecurityRequirement(name = "bearerAuth")
 public class PortfolioController {
 
     private static final String USER_ID = AuthenticationInterceptor.USER_ID;
@@ -34,6 +39,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/portfolios")
+    @Operation(summary = "List the authenticated user's portfolios")
     public List<Portfolio> list(
             @RequestAttribute(USER_ID) long userId) {
         return portfolios.list(userId);
@@ -41,6 +47,7 @@ public class PortfolioController {
 
     @PostMapping("/portfolios")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create a portfolio")
     public Portfolio create(
             @RequestAttribute(USER_ID) long userId,
             @Valid @RequestBody PortfolioRequest request) {
@@ -48,6 +55,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/portfolios/{id}")
+    @Operation(summary = "Get a portfolio")
     public Portfolio get(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id) {
@@ -55,6 +63,7 @@ public class PortfolioController {
     }
 
     @PutMapping("/portfolios/{id}")
+    @Operation(summary = "Replace a portfolio's details")
     public Portfolio update(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id,
@@ -64,6 +73,7 @@ public class PortfolioController {
 
     @DeleteMapping("/portfolios/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete a portfolio")
     public void delete(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id) {
@@ -71,6 +81,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/portfolios/{id}/summary")
+    @Operation(summary = "Get a portfolio summary and holdings")
     public PortfolioSummary summary(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id) {
@@ -78,6 +89,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/portfolios/{id}/transactions")
+    @Operation(summary = "List a portfolio's transactions")
     public List<Transaction> listTransactions(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id) {
@@ -86,6 +98,7 @@ public class PortfolioController {
 
     @PostMapping("/portfolios/{id}/transactions")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Add a transaction to a portfolio")
     public Transaction createTransaction(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id,
@@ -95,6 +108,7 @@ public class PortfolioController {
 
     @DeleteMapping("/transactions/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete a transaction")
     public void deleteTransaction(
             @RequestAttribute(USER_ID) long userId,
             @PathVariable long id) {
