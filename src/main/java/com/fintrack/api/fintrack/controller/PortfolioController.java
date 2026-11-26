@@ -13,6 +13,7 @@ import com.fintrack.api.fintrack.domain.PortfolioSummary;
 import com.fintrack.api.fintrack.domain.Transaction;
 import com.fintrack.api.fintrack.dto.PortfolioRequest;
 import com.fintrack.api.fintrack.dto.TransactionRequest;
+import com.fintrack.api.fintrack.security.AuthenticationInterceptor;
 import com.fintrack.api.fintrack.service.PortfolioService;
 import com.fintrack.api.fintrack.service.TransactionService;
 
@@ -20,7 +21,7 @@ import com.fintrack.api.fintrack.service.TransactionService;
 @RequestMapping("/api")
 public class PortfolioController {
 
-    private static final String USER_ID = "USER_ID";
+    private static final String USER_ID = AuthenticationInterceptor.USER_ID;
 
     private final PortfolioService portfolios;
     private final TransactionService transactions;
