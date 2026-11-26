@@ -34,13 +34,14 @@ public class AuthService {
     this.dummyHash =passwordEncoder.encode("fintrack-dummy-password");
  }
 
- public void register(String rawEmail , String password){
+ public LoginResponse register(String rawEmail , String password){
     String email = normalizeEmail(rawEmail);
     if(users.findByEmail(email).isPresent()){
         throw ApiException.conflict(DUPLICATE);
     }
     try{
-    users.create(email, passwordEncoder.encode(password));
+    long userId = users.create(email, passwordEncoder.encode(password));
+    return new LoginResponse(tokenService.createToken(userId, email), email);
     }catch(DuplicateKeyException exception){
         throw ApiException.conflict(DUPLICATE); 
     }
@@ -52,7 +53,7 @@ public class AuthService {
     String hash = user == null ? dummyHash : user.passwordHash();
 
     if(!passwordEncoder.matches(password, hash)  || user == null){
-        throw ApiException.conflict(INVALID_LOGIN); 
+        throw ApiException.unauthorized(INVALID_LOGIN);
     }
     return  new LoginResponse(tokenService.createToken(user.id(),user.email()),user.email());
  }

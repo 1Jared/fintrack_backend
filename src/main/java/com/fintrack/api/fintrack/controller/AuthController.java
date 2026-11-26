@@ -3,7 +3,7 @@ package com.fintrack.api.fintrack.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fintrack.api.fintrack.dto.AuthRequest;
-import com.fintrack.api.fintrack.dto.MessageResponse;
+import com.fintrack.api.fintrack.dto.LoginResponse;
 import com.fintrack.api.fintrack.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -36,12 +36,12 @@ public class AuthController {
 
     @PostMapping("/auth/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageResponse register(@Valid @RequestBody AuthRequest request) {
-        authService.register(request.email(), request.password());
-        
-        
-        return new MessageResponse("Account Created successfully.");
+    public LoginResponse register(@Valid @RequestBody AuthRequest request) {
+        return authService.register(request.email(), request.password());
     }
-    
-    
+
+    @PostMapping("/auth/login")
+    public LoginResponse login(@Valid @RequestBody AuthRequest request) {
+        return authService.login(request.email(), request.password());
+    }
 }
