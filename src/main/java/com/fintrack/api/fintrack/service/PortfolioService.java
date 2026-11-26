@@ -1,3 +1,4 @@
+
 package com.fintrack.api.fintrack.service;
 
 import java.math.BigDecimal;
@@ -16,14 +17,17 @@ import com.fintrack.api.fintrack.repository.TransactionRepository;
 
 @Service
 public class PortfolioService {
+
     static final String NOT_FOUND = "Portfolio not found";
 
     private final PortfolioRepository portfolios;
-    private TransactionRepository transactions;
+    private final TransactionRepository transactions;
 
-    public PortfolioService(PortfolioRepository portfolios, TransactionRepository transactions) {
-        this.transactions = transactions;
+    public PortfolioService(
+            PortfolioRepository portfolios,
+            TransactionRepository transactions) {
         this.portfolios = portfolios;
+        this.transactions = transactions;
     }
 
     public List<Portfolio> list(long userId) {
@@ -31,43 +35,84 @@ public class PortfolioService {
     }
 
     public Portfolio get(long id, long userId) {
-        return portfolios.findByIdAndUser(id, userId).orElseThrow(() -> ApiException.notFound(NOT_FOUND));
+        return portfolios.findByIdAndUser(id, userId)
+                .orElseThrow(() -> ApiException.notFound(NOT_FOUND));
     }
 
     @Transactional
     public Portfolio create(long userId, PortfolioRequest request) {
-        long id = portfolios.create(userId, request.name().trim(), request.clientName().trim(), request.baseCurrency());
+
+        long id = portfolios.create(
+                userId,
+                request.name().trim(),
+                request.clientName().trim(),
+                request.baseCurrency()
+        );
+
         return get(id, userId);
     }
 
     @Transactional
-    public Portfolio update(long id, long userId, PortfolioRequest request) {
-        Portfolio existing = portfolios.lockByIdAndUser(id, userId).orElseThrow(() -> ApiException.notFound(NOT_FOUND));
-        if (existing.baseCurrency() != request.baseCurrency() && transactions.existsForPortfolio(id)) {
-            throw ApiException.badRequest("Currency cant be changed after transactions exist");
+    public Portfolio update(
+            long id,
+            long userId,
+            PortfolioRequest request) {
+
+        Portfolio existing = portfolios.lockByIdAndUser(id, userId)
+                .orElseThrow(() -> ApiException.notFound(NOT_FOUND));
+
+        if (existing.baseCurrency() != request.baseCurrency()
+                && transactions.existsForPortfolio(id)) {
+
+            throw ApiException.badRequest(
+                    "Currency cant be changed after transactions exist"
+            );
         }
-        portfolios.update(id, request.name().trim(), request.clientName().trim(), request.baseCurrency());
+
+        boolean updated = portfolios.update(
+                id,
+                userId,
+                request.name().trim(),
+                request.clientName().trim(),
+                request.baseCurrency()
+        );
+
+        if (!updated) {
+            throw ApiException.notFound(NOT_FOUND);
+        }
 
         return get(id, userId);
     }
 
     @Transactional
     public void delete(long id, long userId) {
+
         if (!portfolios.delete(id, userId)) {
             throw ApiException.notFound(NOT_FOUND);
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PortfolioSummary summary(long id, long userId) {
+
         Portfolio portfolio = get(id, userId);
 
-        List<Holding> holdings = HoldingsCalculator.calculate(transactions.findByPortfolio(id));
-        BigDecimal total = HoldingsCalculator.money(holdings.stream()
-                .map(Holding::totalInvested)
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
-        return new PortfolioSummary(portfolio.baseCurrency(), "cost_basis", holdings, total, total);
+        List<Holding> holdings = HoldingsCalculator.calculate(
+                transactions.findByPortfolio(id)
+        );
 
+        BigDecimal total = HoldingsCalculator.money(
+                holdings.stream()
+                        .map(Holding::totalInvested)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+        );
+
+        return new PortfolioSummary(
+                portfolio.baseCurrency(),
+                "cost_basis",
+                holdings,
+                total,
+                total
+        );
     }
-
 }

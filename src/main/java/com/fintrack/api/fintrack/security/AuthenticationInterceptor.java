@@ -24,8 +24,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     public AuthenticationInterceptor(
             TokenService tokenService,
-            UserRepository users
-    ) {
+            UserRepository users) {
         this.tokenService = tokenService;
         this.users = users;
     }
@@ -34,8 +33,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(
             HttpServletRequest request,
             HttpServletResponse response,
-            Object handler
-    ) {
+            Object handler) {
 
         if (CorsUtils.isPreFlightRequest(request)) {
             return true;
@@ -50,16 +48,19 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                         0,
                         BEARER_PREFIX,
                         0,
-                        BEARER_PREFIX.length()
-                )) {
+                        BEARER_PREFIX.length())) {
             throw ApiException.unauthorized("authentication needed");
         }
 
-        long userId = tokenService.verify(
-                header.substring(BEARER_PREFIX.length()).trim()
-        );
+        String token = header.substring(BEARER_PREFIX.length()).trim();
 
-        if (!users.existById(userId)) {
+        if (token.isEmpty()) {
+            throw ApiException.unauthorized("authentication needed");
+        }
+
+        long userId = tokenService.verify(token);
+
+        if (!users.existsById(userId)) {
             throw ApiException.unauthorized(TokenService.INVALID_SESSION);
         }
 
